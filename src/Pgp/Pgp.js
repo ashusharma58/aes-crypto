@@ -59,7 +59,7 @@ async function decrypt (params = {}, options = DEFAULT_OPTIONS) {
 
   const { payload, publicKeyArmored } = data
 
-  if (!payload || !publicKeyArmored) { return data }
+  if (!payload || !publicKeyArmored) { return {} }
 
   const { keys: [privateKey] } = await key.readArmored(privateKeyArmored)
   await privateKey.decrypt(passphrase)

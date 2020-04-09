@@ -111,7 +111,7 @@ function _decrypt() {
     } = data;
 
     if (!payload || !publicKeyArmored) {
-      return data;
+      return {};
     }
 
     var {
