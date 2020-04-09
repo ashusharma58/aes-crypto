@@ -1,0 +1,42 @@
+{
+  "name": "@m92/crypto",
+  "version": "0.0.7",
+  "description": "Cryptographic Module",
+  "main": "dist/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "openpgp": "^4.10.1",
+    "randomstring": "^1.1.5",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "@babel/register": "^7.8.3",
+    "rimraf": "^3.0.2"
+  },
+  "scripts": {
+    "test": "node tests",
+    "build:source": "rimraf dist/ && babel src/ --out-dir dist/ --copy-files",
+    "clean": "rimraf dist/ && rimraf test-dist/",
+    "build": "npm run build:source"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://agarwalmehul@bitbucket.org/mehul-agarwal/m92-crypto.git"
+  },
+  "keywords": [
+    "crypto",
+    "aes",
+    "nacl",
+    "pgp"
+  ],
+  "author": "Mehul Agarwal <agarwalmehul92@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/mehul-agarwal/m92-crypto#readme"
+}
