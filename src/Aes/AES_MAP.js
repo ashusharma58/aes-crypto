@@ -1,9 +1,14 @@
 'use strict'
 
-import { Aes256GCM } from './Aes256GCM'
-import { Aes256CBC } from './Aes256CBC'
+import AesCBC from './AesCBC'
+import AesGCM from './AesGCM'
 
-export const ALGORITHM = {
-  'aes-256-gcm': Aes256GCM,
-  'aes-256-cbc': Aes256CBC
-}
+const { ALGORITHMS: CBC_ALGORITHM } = AesCBC
+const { ALGORITHMS: GCM_ALGORITHM } = AesGCM
+
+const ALGORITHM = {}
+
+CBC_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = AesCBC)
+GCM_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = AesGCM)
+
+export { ALGORITHM }

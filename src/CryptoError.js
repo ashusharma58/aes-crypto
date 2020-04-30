@@ -1,19 +1,22 @@
 'use strict'
 
-import http from 'http'
-import { CustomError } from './CustomError'
+import ResponseBody from './ResponseBody'
 
-const ERROR_NAME = 'CryptoError'
+const STATUS_CODE = 500
 
-export class CryptoError extends CustomError {
-  constructor (error, ...params) {
-    const { message, statusCode = 500 } = error
-    const [algorithm = ''] = params
+export default class CryptoError extends Error {
+  constructor (entity, message, error) {
+    super(message)
+    Error.captureStackTrace(this, CryptoError)
 
-    super(message, ERROR_NAME)
+    this.name = `CryptoError(${entity.toUpperCase()})`
+    this.statusCode = STATUS_CODE
+    this.message = message || error.message
+    this.error = (error.constructor.name !== 'CryptoError' && error) || undefined
+  }
 
-    this.algorithm = algorithm
-    this.statusCode = statusCode
-    this.status = http.STATUS_CODES[statusCode]
+  getResponseBody () {
+    const { statusCode, message, error } = this
+    return new ResponseBody(statusCode, message, undefined, error)
   }
 }

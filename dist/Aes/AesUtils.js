@@ -13,16 +13,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var AesUtils = {
   generateKey,
-  extractKeyFromToken,
-  generatePublicKey,
-  generatePrivateKey
+  extractKeyFromToken
 };
 exports.AesUtils = AesUtils;
 
 function generateKey() {
   var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 16;
   return _randomstring.default.generate(length);
-}
+} // TODO: Implement PBKDF2
+
 
 function extractKeyFromToken() {
   var token = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
@@ -32,22 +31,4 @@ function extractKeyFromToken() {
   var eKey2 = checksum.substring(checksumLength - 16);
   var encryptionKey = [eKey1, eKey2].join('');
   return encryptionKey;
-}
-
-function generatePublicKey() {
-  var outputFormat = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'base64';
-
-  var ecdh = _crypto.default.createECDH('secp256k1');
-
-  var publicKey = ecdh.generateKeys(outputFormat);
-  return {
-    ecdh,
-    publicKey
-  };
-}
-
-function generatePrivateKey(ecdh, publicKey) {
-  var outputFormat = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'base64';
-  var key = ecdh.computeSecret(publicKey, outputFormat);
-  return key.toString(outputFormat);
 }

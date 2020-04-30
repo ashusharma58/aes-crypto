@@ -27,7 +27,7 @@ function encrypt(algorithom, params, options) {
       throw new TypeError("Unprocessable AES Algorithm: ".concat(algorithom));
     }
 
-    return crypto.encrypt(params, options);
+    return crypto.encrypt(algorithom, params, options);
   } catch (e) {
     throw new _CryptoError.CryptoError(e);
   }
@@ -45,7 +45,7 @@ function decrypt(algorithom, params, options) {
       throw new TypeError("Unprocessable AES Algorithm: ".concat(algorithom));
     }
 
-    return crypto.decrypt(params, options);
+    return crypto.decrypt(algorithom, params, options);
   } catch (e) {
     throw new _CryptoError.CryptoError(e);
   }

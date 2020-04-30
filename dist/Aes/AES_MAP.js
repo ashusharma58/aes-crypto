@@ -5,12 +5,19 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ALGORITHM = void 0;
 
-var _Aes256GCM = require("./Aes256GCM");
+var _AesCBC = _interopRequireDefault(require("./AesCBC"));
 
-var _Aes256CBC = require("./Aes256CBC");
+var _AesGCM = _interopRequireDefault(require("./AesGCM"));
 
-var ALGORITHM = {
-  'aes-256-gcm': _Aes256GCM.Aes256GCM,
-  'aes-256-cbc': _Aes256CBC.Aes256CBC
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var {
+  ALGORITHMS: CBC_ALGORITHM
+} = _AesCBC.default;
+var {
+  ALGORITHMS: GCM_ALGORITHM
+} = _AesGCM.default;
+var ALGORITHM = {};
 exports.ALGORITHM = ALGORITHM;
+CBC_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = _AesCBC.default);
+GCM_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = _AesGCM.default);

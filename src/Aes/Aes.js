@@ -18,7 +18,7 @@ function encrypt (algorithom, params, options) {
     if (!crypto) {
       throw new TypeError(`Unprocessable AES Algorithm: ${algorithom}`)
     }
-    return crypto.encrypt(params, options)
+    return crypto.encrypt(algorithom, params, options)
   } catch (e) { throw new CryptoError(e) }
 }
 
@@ -32,6 +32,6 @@ function decrypt (algorithom, params, options) {
     if (!crypto) {
       throw new TypeError(`Unprocessable AES Algorithm: ${algorithom}`)
     }
-    return crypto.decrypt(params, options)
+    return crypto.decrypt(algorithom, params, options)
   } catch (e) { throw new CryptoError(e) }
 }

@@ -3,34 +3,33 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CryptoError = void 0;
+exports.default = void 0;
 
-var _http = _interopRequireDefault(require("http"));
-
-var _CustomError = require("./CustomError");
+var _ResponseBody = _interopRequireDefault(require("./ResponseBody"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var ERROR_NAME = 'CryptoError';
+var STATUS_CODE = 500;
 
-class CryptoError extends _CustomError.CustomError {
-  constructor(error) {
+class CryptoError extends Error {
+  constructor(entity, message, error) {
+    super(message);
+    Error.captureStackTrace(this, CryptoError);
+    this.name = "CryptoError(".concat(entity.toUpperCase(), ")");
+    this.statusCode = STATUS_CODE;
+    this.message = message || error.message;
+    this.error = error.constructor.name !== 'CryptoError' && error || undefined;
+  }
+
+  getResponseBody() {
     var {
+      statusCode,
       message,
-      statusCode = 500
-    } = error;
-
-    for (var _len = arguments.length, params = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      params[_key - 1] = arguments[_key];
-    }
-
-    var [algorithm = ''] = params;
-    super(message, ERROR_NAME);
-    this.algorithm = algorithm;
-    this.statusCode = statusCode;
-    this.status = _http.default.STATUS_CODES[statusCode];
+      error
+    } = this;
+    return new _ResponseBody.default(statusCode, message, undefined, error);
   }
 
 }
 
-exports.CryptoError = CryptoError;
+exports.default = CryptoError;

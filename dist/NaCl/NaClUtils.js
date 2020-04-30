@@ -9,6 +9,11 @@ var _tweetnacl = require("tweetnacl");
 
 var _tweetnaclUtil = require("tweetnacl-util");
 
+var _CryptoError = _interopRequireDefault(require("../CryptoError"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var ENTITY = 'NaCl-Utils';
 var NaClUtils = {
   generateKeyPair,
   generateKey,
@@ -17,26 +22,38 @@ var NaClUtils = {
 exports.NaClUtils = NaClUtils;
 
 function generateKeyPair() {
-  var keyPair = _tweetnacl.box.keyPair();
+  try {
+    var keyPair = _tweetnacl.box.keyPair();
 
-  var {
-    publicKey,
-    secretKey
-  } = keyPair;
-  var publicKeyString = (0, _tweetnaclUtil.encodeBase64)(publicKey);
-  var secretKeyString = (0, _tweetnaclUtil.encodeBase64)(secretKey);
-  return {
-    publicKey: publicKeyString,
-    secretKey: secretKeyString
-  };
+    var {
+      publicKey,
+      secretKey
+    } = keyPair;
+    var publicKeyString = (0, _tweetnaclUtil.encodeBase64)(publicKey);
+    var secretKeyString = (0, _tweetnaclUtil.encodeBase64)(secretKey);
+    return {
+      publicKey: publicKeyString,
+      secretKey: secretKeyString
+    };
+  } catch (e) {
+    throw new _CryptoError.default(ENTITY, 'Error Generating Key Pair', e);
+  }
 }
 
 function generateKey(publicKeyString, secretKeyString) {
-  var publicKey = (0, _tweetnaclUtil.decodeBase64)(publicKeyString);
-  var secretKey = (0, _tweetnaclUtil.decodeBase64)(secretKeyString);
-  return _tweetnacl.box.before(publicKey, secretKey);
+  try {
+    var publicKey = (0, _tweetnaclUtil.decodeBase64)(publicKeyString);
+    var secretKey = (0, _tweetnaclUtil.decodeBase64)(secretKeyString);
+    return _tweetnacl.box.before(publicKey, secretKey);
+  } catch (e) {
+    throw new _CryptoError.default(ENTITY, 'Error Generating Key', e);
+  }
 }
 
 function generateNonce() {
-  return (0, _tweetnacl.randomBytes)(_tweetnacl.box.nonceLength);
+  try {
+    return (0, _tweetnacl.randomBytes)(_tweetnacl.box.nonceLength);
+  } catch (e) {
+    throw new _CryptoError.default(ENTITY, 'Error Generating Nonce', e);
+  }
 }

@@ -9,6 +9,8 @@ var _openpgp = _interopRequireWildcard(require("openpgp"));
 
 var _PgpUtils = _interopRequireDefault(require("./PgpUtils"));
 
+var _CryptoError = _interopRequireDefault(require("../CryptoError"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -19,6 +21,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
+var ALGORITHM = 'PGP';
 var Pgp = {
   encrypt,
   decrypt
@@ -44,41 +47,45 @@ function _encrypt() {
     var dataString = JSON.stringify(data);
 
     if (typeof publicKeyArmored !== 'string' || !publicKeyArmored) {
-      throw new Error('Provided "publicKeyArmored" must be a non-empty string');
+      throw new _CryptoError.default(ALGORITHM, "Provided 'publicKeyArmored' must be a non-empty string");
     }
 
     if (typeof passphrase !== 'string' || !passphrase) {
-      throw new Error('Provided "passphrase" must be a non-empty string');
+      throw new _CryptoError.default(ALGORITHM, "Provided 'passphrase' must be a non-empty string");
     }
 
-    var keyGenOpts = {
-      userIds,
-      passphrase
-    };
-    var newKeys = yield _PgpUtils.default.generateKeys(keyGenOpts);
-    var {
-      privateKeyArmored
-    } = newKeys;
-    var {
-      keys: [privateKey]
-    } = yield _openpgp.key.readArmored(privateKeyArmored);
-    yield privateKey.decrypt(passphrase);
+    try {
+      var keyGenOpts = {
+        userIds,
+        passphrase
+      };
+      var newKeys = yield _PgpUtils.default.generateKeys(keyGenOpts);
+      var {
+        privateKeyArmored
+      } = newKeys;
+      var {
+        keys: [privateKey]
+      } = yield _openpgp.key.readArmored(privateKeyArmored);
+      yield privateKey.decrypt(passphrase);
 
-    var msg = _openpgp.message.fromText(dataString);
+      var msg = _openpgp.message.fromText(dataString);
 
-    var publicKeys = (yield _openpgp.key.readArmored(publicKeyArmored)).keys;
-    var encryptionOpts = {
-      message: msg,
-      publicKeys,
-      privateKeys: [privateKey]
-    };
-    var {
-      data: encryptedData
-    } = yield _openpgp.default.encrypt(encryptionOpts);
-    return {
-      payload: encryptedData,
-      publicKeyArmored: newKeys.publicKeyArmored
-    };
+      var publicKeys = (yield _openpgp.key.readArmored(publicKeyArmored)).keys;
+      var encryptionOpts = {
+        message: msg,
+        publicKeys,
+        privateKeys: [privateKey]
+      };
+      var {
+        data: encryptedData
+      } = yield _openpgp.default.encrypt(encryptionOpts);
+      return {
+        payload: encryptedData,
+        publicKeyArmored: newKeys.publicKeyArmored
+      };
+    } catch (e) {
+      throw new _CryptoError.default(ALGORITHM, '', e);
+    }
   });
   return _encrypt.apply(this, arguments);
 }
@@ -98,11 +105,11 @@ function _decrypt() {
     } = params;
 
     if (typeof privateKeyArmored !== 'string' || !privateKeyArmored) {
-      throw new Error('Provided "privateKeyArmored" must be a non-empty string');
+      throw new _CryptoError.default(ALGORITHM, "Provided 'privateKeyArmored' must be a non-empty string");
     }
 
     if (typeof passphrase !== 'string' || !passphrase) {
-      throw new Error('Provided "passphrase" must be a non-empty string');
+      throw new _CryptoError.default(ALGORITHM, "Provided 'passphrase' must be a non-empty string");
     }
 
     var {
@@ -114,22 +121,26 @@ function _decrypt() {
       return {};
     }
 
-    var {
-      keys: [privateKey]
-    } = yield _openpgp.key.readArmored(privateKeyArmored);
-    yield privateKey.decrypt(passphrase);
-    var msg = yield _openpgp.message.readArmored(payload);
-    var publicKeys = (yield _openpgp.key.readArmored(publicKeyArmored)).keys;
-    var decryptionOpts = {
-      message: msg,
-      publicKeys,
-      privateKeys: [privateKey]
-    };
-    var {
-      data: decryptedData
-    } = yield _openpgp.default.decrypt(decryptionOpts);
-    var jsonData = JSON.parse(decryptedData);
-    return jsonData;
+    try {
+      var {
+        keys: [privateKey]
+      } = yield _openpgp.key.readArmored(privateKeyArmored);
+      yield privateKey.decrypt(passphrase);
+      var msg = yield _openpgp.message.readArmored(payload);
+      var publicKeys = (yield _openpgp.key.readArmored(publicKeyArmored)).keys;
+      var decryptionOpts = {
+        message: msg,
+        publicKeys,
+        privateKeys: [privateKey]
+      };
+      var {
+        data: decryptedData
+      } = yield _openpgp.default.decrypt(decryptionOpts);
+      var jsonData = JSON.parse(decryptedData);
+      return jsonData;
+    } catch (e) {
+      throw new _CryptoError.default(ALGORITHM, '', e);
+    }
   });
   return _decrypt.apply(this, arguments);
 }
