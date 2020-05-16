@@ -15,21 +15,22 @@ const DEFAULT_OPTIONS = {}
 export default Pgp
 
 async function encrypt (params = {}, options = DEFAULT_OPTIONS) {
+  const source = `${ALGORITHM}::encrypt`
   const { data = {}, publicKeyArmored = '', passphrase = '', userIds = [] } = params
   const dataString = JSON.stringify(data)
 
   if (typeof publicKeyArmored !== 'string' || !publicKeyArmored) {
-    throw new CryptoError(ALGORITHM, `Provided 'publicKeyArmored' must be a non-empty string`)
+    throw new CryptoError(null, source, 'Provided \'publicKeyArmored\' must be a non-empty string')
   }
 
   if (typeof passphrase !== 'string' || !passphrase) {
-    throw new CryptoError(ALGORITHM, `Provided 'passphrase' must be a non-empty string`)
+    throw new CryptoError(null, source, 'Provided \'passphrase\' must be a non-empty string')
   }
 
   try {
     const keyGenOpts = { userIds, passphrase }
     const newKeys = await PgpUtils.generateKeys(keyGenOpts)
-    let { privateKeyArmored } = newKeys
+    const { privateKeyArmored } = newKeys
     const { keys: [privateKey] } = await key.readArmored(privateKeyArmored)
     await privateKey.decrypt(passphrase)
 
@@ -47,18 +48,19 @@ async function encrypt (params = {}, options = DEFAULT_OPTIONS) {
       payload: encryptedData,
       publicKeyArmored: newKeys.publicKeyArmored
     }
-  } catch (e) { throw new CryptoError(ALGORITHM, '', e) }
+  } catch (e) { throw new CryptoError(e, source) }
 }
 
 async function decrypt (params = {}, options = DEFAULT_OPTIONS) {
+  const source = `${ALGORITHM}::decrypt`
   const { data = {}, privateKeyArmored = '', passphrase = '' } = params
 
   if (typeof privateKeyArmored !== 'string' || !privateKeyArmored) {
-    throw new CryptoError(ALGORITHM, `Provided 'privateKeyArmored' must be a non-empty string`)
+    throw new CryptoError(null, source, 'Provided \'privateKeyArmored\' must be a non-empty string')
   }
 
   if (typeof passphrase !== 'string' || !passphrase) {
-    throw new CryptoError(ALGORITHM, `Provided 'passphrase' must be a non-empty string`)
+    throw new CryptoError(null, source, 'Provided \'passphrase\' must be a non-empty string')
   }
 
   const { payload, publicKeyArmored } = data
@@ -74,11 +76,11 @@ async function decrypt (params = {}, options = DEFAULT_OPTIONS) {
     const decryptionOpts = {
       message: msg,
       publicKeys,
-      privateKeys: [privateKey],
+      privateKeys: [privateKey]
     }
 
     const { data: decryptedData } = await openpgp.decrypt(decryptionOpts)
     const jsonData = JSON.parse(decryptedData)
     return jsonData
-  } catch (e) { throw new CryptoError(ALGORITHM, '', e) }
+  } catch (e) { throw new CryptoError(e, source) }
 }

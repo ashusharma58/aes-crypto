@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.NaClUtils = void 0;
+exports.default = void 0;
 
 var _tweetnacl = require("tweetnacl");
 
@@ -13,13 +13,14 @@ var _CryptoError = _interopRequireDefault(require("../CryptoError"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var ENTITY = 'NaCl-Utils';
+var SOURCE = 'NaCl::Utils';
 var NaClUtils = {
   generateKeyPair,
   generateKey,
   generateNonce
 };
-exports.NaClUtils = NaClUtils;
+var _default = NaClUtils;
+exports.default = _default;
 
 function generateKeyPair() {
   try {
@@ -36,7 +37,7 @@ function generateKeyPair() {
       secretKey: secretKeyString
     };
   } catch (e) {
-    throw new _CryptoError.default(ENTITY, 'Error Generating Key Pair', e);
+    throw new _CryptoError.default(e, SOURCE, 'Error Generating Key Pair');
   }
 }
 
@@ -46,7 +47,7 @@ function generateKey(publicKeyString, secretKeyString) {
     var secretKey = (0, _tweetnaclUtil.decodeBase64)(secretKeyString);
     return _tweetnacl.box.before(publicKey, secretKey);
   } catch (e) {
-    throw new _CryptoError.default(ENTITY, 'Error Generating Key', e);
+    throw new _CryptoError.default(e, SOURCE, 'Error Generating Key');
   }
 }
 
@@ -54,6 +55,6 @@ function generateNonce() {
   try {
     return (0, _tweetnacl.randomBytes)(_tweetnacl.box.nonceLength);
   } catch (e) {
-    throw new _CryptoError.default(ENTITY, 'Error Generating Nonce', e);
+    throw new _CryptoError.default(e, SOURCE, 'Error Generating Nonce');
   }
 }

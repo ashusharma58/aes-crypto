@@ -1,4 +1,9 @@
 'use strict'
 
-export * from './NaClBox'
-export * from './NaClUtils'
+import NaClBox from './NaClBox'
+import NaClUtils from './NaClUtils'
+
+export {
+  NaClBox,
+  NaClUtils
+}

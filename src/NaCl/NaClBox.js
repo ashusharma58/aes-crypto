@@ -2,16 +2,19 @@
 
 import { box } from 'tweetnacl'
 import { decodeUTF8, encodeUTF8, encodeBase64, decodeBase64 } from 'tweetnacl-util'
-import { NaClUtils } from './NaClUtils'
+import NaClUtils from './NaClUtils'
 import CryptoError from '../CryptoError'
 
-const ALGORITHM = 'NaCl-Box'
-export const NaClBox = {
+const ALGORITHM = 'NaClBox'
+const NaClBox = {
   encrypt,
   decrypt
 }
 
+export default NaClBox
+
 function encrypt (publicKey, secretKey, data) {
+  const source = `${ALGORITHM}::encrypt`
   const key = NaClUtils.generateKey(publicKey, secretKey)
   const nonce = NaClUtils.generateNonce()
 
@@ -25,11 +28,12 @@ function encrypt (publicKey, secretKey, data) {
     fullMessage.set(encryptedData, nonce.length)
 
     const base64FullMessage = encodeBase64(fullMessage)
-    return base64FullMessage
-  } catch (e) { throw new CryptoError(ALGORITHM, '', e) }
+    return { payload: base64FullMessage }
+  } catch (e) { throw new CryptoError(e, source) }
 }
 
 function decrypt (publicKey, secretKey, data) {
+  const source = `${ALGORITHM}::decrypt`
   const key = NaClUtils.generateKey(publicKey, secretKey)
 
   try {
@@ -39,14 +43,14 @@ function decrypt (publicKey, secretKey, data) {
     const decryptedData = box.open.after(encryptedData, nonce, key)
 
     if (decryptedData === null) {
-      throw new CryptoError(ALGORITHM, 'Error Decrypting Data')
+      throw new CryptoError(null, source, 'Error Decrypting Data')
     }
 
     const base64DecryptedData = encodeUTF8(decryptedData)
 
     try {
       const jsonData = JSON.parse(base64DecryptedData)
-      return jsonData
-    } catch (e) { return base64DecryptedData }
-  } catch (e) { throw new CryptoError(ALGORITHM, '', e) }
+      return { payload: jsonData }
+    } catch (e) { return { payload: base64DecryptedData } }
+  } catch (e) { throw new CryptoError(e, source) }
 }

@@ -3,29 +3,32 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.NaClBox = void 0;
+exports.default = void 0;
 
 var _tweetnacl = require("tweetnacl");
 
 var _tweetnaclUtil = require("tweetnacl-util");
 
-var _NaClUtils = require("./NaClUtils");
+var _NaClUtils = _interopRequireDefault(require("./NaClUtils"));
 
 var _CryptoError = _interopRequireDefault(require("../CryptoError"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var ALGORITHM = 'NaCl-Box';
+var ALGORITHM = 'NaClBox';
 var NaClBox = {
   encrypt,
   decrypt
 };
-exports.NaClBox = NaClBox;
+var _default = NaClBox;
+exports.default = _default;
 
 function encrypt(publicKey, secretKey, data) {
-  var key = _NaClUtils.NaClUtils.generateKey(publicKey, secretKey);
+  var source = "".concat(ALGORITHM, "::encrypt");
 
-  var nonce = _NaClUtils.NaClUtils.generateNonce();
+  var key = _NaClUtils.default.generateKey(publicKey, secretKey);
+
+  var nonce = _NaClUtils.default.generateNonce();
 
   try {
     var dataString = JSON.stringify(data);
@@ -37,14 +40,18 @@ function encrypt(publicKey, secretKey, data) {
     fullMessage.set(nonce);
     fullMessage.set(encryptedData, nonce.length);
     var base64FullMessage = (0, _tweetnaclUtil.encodeBase64)(fullMessage);
-    return base64FullMessage;
+    return {
+      payload: base64FullMessage
+    };
   } catch (e) {
-    throw new _CryptoError.default(ALGORITHM, '', e);
+    throw new _CryptoError.default(e, source);
   }
 }
 
 function decrypt(publicKey, secretKey, data) {
-  var key = _NaClUtils.NaClUtils.generateKey(publicKey, secretKey);
+  var source = "".concat(ALGORITHM, "::decrypt");
+
+  var key = _NaClUtils.default.generateKey(publicKey, secretKey);
 
   try {
     var dataWithNonceAsUint8Array = (0, _tweetnaclUtil.decodeBase64)(data);
@@ -54,18 +61,22 @@ function decrypt(publicKey, secretKey, data) {
     var decryptedData = _tweetnacl.box.open.after(encryptedData, nonce, key);
 
     if (decryptedData === null) {
-      throw new _CryptoError.default(ALGORITHM, 'Error Decrypting Data');
+      throw new _CryptoError.default(null, source, 'Error Decrypting Data');
     }
 
     var base64DecryptedData = (0, _tweetnaclUtil.encodeUTF8)(decryptedData);
 
     try {
       var jsonData = JSON.parse(base64DecryptedData);
-      return jsonData;
+      return {
+        payload: jsonData
+      };
     } catch (e) {
-      return base64DecryptedData;
+      return {
+        payload: base64DecryptedData
+      };
     }
   } catch (e) {
-    throw new _CryptoError.default(ALGORITHM, '', e);
+    throw new _CryptoError.default(e, source);
   }
 }

@@ -38,6 +38,7 @@ function _encrypt() {
   _encrypt = _asyncToGenerator(function* () {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_OPTIONS;
+    var source = "".concat(ALGORITHM, "::encrypt");
     var {
       data = {},
       publicKeyArmored = '',
@@ -47,11 +48,11 @@ function _encrypt() {
     var dataString = JSON.stringify(data);
 
     if (typeof publicKeyArmored !== 'string' || !publicKeyArmored) {
-      throw new _CryptoError.default(ALGORITHM, "Provided 'publicKeyArmored' must be a non-empty string");
+      throw new _CryptoError.default(null, source, 'Provided \'publicKeyArmored\' must be a non-empty string');
     }
 
     if (typeof passphrase !== 'string' || !passphrase) {
-      throw new _CryptoError.default(ALGORITHM, "Provided 'passphrase' must be a non-empty string");
+      throw new _CryptoError.default(null, source, 'Provided \'passphrase\' must be a non-empty string');
     }
 
     try {
@@ -84,7 +85,7 @@ function _encrypt() {
         publicKeyArmored: newKeys.publicKeyArmored
       };
     } catch (e) {
-      throw new _CryptoError.default(ALGORITHM, '', e);
+      throw new _CryptoError.default(e, source);
     }
   });
   return _encrypt.apply(this, arguments);
@@ -98,6 +99,7 @@ function _decrypt() {
   _decrypt = _asyncToGenerator(function* () {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_OPTIONS;
+    var source = "".concat(ALGORITHM, "::decrypt");
     var {
       data = {},
       privateKeyArmored = '',
@@ -105,11 +107,11 @@ function _decrypt() {
     } = params;
 
     if (typeof privateKeyArmored !== 'string' || !privateKeyArmored) {
-      throw new _CryptoError.default(ALGORITHM, "Provided 'privateKeyArmored' must be a non-empty string");
+      throw new _CryptoError.default(null, source, 'Provided \'privateKeyArmored\' must be a non-empty string');
     }
 
     if (typeof passphrase !== 'string' || !passphrase) {
-      throw new _CryptoError.default(ALGORITHM, "Provided 'passphrase' must be a non-empty string");
+      throw new _CryptoError.default(null, source, 'Provided \'passphrase\' must be a non-empty string');
     }
 
     var {
@@ -139,7 +141,7 @@ function _decrypt() {
       var jsonData = JSON.parse(decryptedData);
       return jsonData;
     } catch (e) {
-      throw new _CryptoError.default(ALGORITHM, '', e);
+      throw new _CryptoError.default(e, source);
     }
   });
   return _decrypt.apply(this, arguments);

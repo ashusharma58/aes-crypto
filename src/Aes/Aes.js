@@ -1,12 +1,14 @@
 'use strict'
 
-import { ALGORITHM } from './AES_MAP'
-import { CryptoError } from '../CryptoError'
+import { ALGORITHMS } from './AES_MAP'
+import CryptoError from '../CryptoError'
 
-export const Aes = {
+const Aes = {
   encrypt,
   decrypt
 }
+
+export default Aes
 
 function encrypt (algorithom, params, options) {
   try {
@@ -14,7 +16,7 @@ function encrypt (algorithom, params, options) {
       throw new TypeError('Provided "algorithom" must be a non-empty string')
     }
 
-    const crypto = ALGORITHM[algorithom]
+    const crypto = ALGORITHMS[algorithom]
     if (!crypto) {
       throw new TypeError(`Unprocessable AES Algorithm: ${algorithom}`)
     }
@@ -28,7 +30,7 @@ function decrypt (algorithom, params, options) {
       throw new TypeError('Provided "algorithom" must be a non-empty string')
     }
 
-    const crypto = ALGORITHM[algorithom]
+    const crypto = ALGORITHMS[algorithom]
     if (!crypto) {
       throw new TypeError(`Unprocessable AES Algorithm: ${algorithom}`)
     }

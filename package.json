@@ -1,12 +1,13 @@
 {
   "name": "@m92/crypto",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Cryptographic Module",
   "main": "dist/index.js",
   "directories": {
     "test": "tests"
   },
   "dependencies": {
+    "auto-bind": "^4.0.0",
     "openpgp": "^4.10.1",
     "randomstring": "^1.1.5",
     "tweetnacl": "^1.0.3",

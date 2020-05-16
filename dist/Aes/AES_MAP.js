@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ALGORITHM = void 0;
+exports.ALGORITHMS = void 0;
 
 var _AesCBC = _interopRequireDefault(require("./AesCBC"));
 
@@ -17,7 +17,11 @@ var {
 var {
   ALGORITHMS: GCM_ALGORITHM
 } = _AesGCM.default;
-var ALGORITHM = {};
-exports.ALGORITHM = ALGORITHM;
-CBC_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = _AesCBC.default);
-GCM_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = _AesGCM.default);
+var ALGORITHMS = {};
+exports.ALGORITHMS = ALGORITHMS;
+CBC_ALGORITHM.forEach(algorithm => {
+  ALGORITHMS[algorithm] = _AesCBC.default;
+});
+GCM_ALGORITHM.forEach(algorithm => {
+  ALGORITHMS[algorithm] = _AesGCM.default;
+});

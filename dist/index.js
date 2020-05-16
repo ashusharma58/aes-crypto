@@ -1,53 +1,22 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var AesExports = _interopRequireWildcard(require("./Aes"));
+
+var NaClExports = _interopRequireWildcard(require("./NaCl"));
+
+var PgpExports = _interopRequireWildcard(require("./Pgp"));
+
+var _ResponseBody = _interopRequireDefault(require("./ResponseBody"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+var exportProps = {};
+Object.assign(exportProps, AesExports, NaClExports, PgpExports, {
+  ResponseBody: _ResponseBody.default,
+  default: undefined
 });
-
-var _Aes = require("./Aes");
-
-Object.keys(_Aes).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _Aes[key];
-    }
-  });
-});
-
-var _NaCl = require("./NaCl");
-
-Object.keys(_NaCl).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _NaCl[key];
-    }
-  });
-});
-
-var _Pgp = require("./Pgp");
-
-Object.keys(_Pgp).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _Pgp[key];
-    }
-  });
-});
-
-var _ResponseBody = require("./ResponseBody");
-
-Object.keys(_ResponseBody).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _ResponseBody[key];
-    }
-  });
-});
+module.exports = exportProps;

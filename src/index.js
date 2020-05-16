@@ -1,6 +1,11 @@
 'use strict'
 
-export * from './Aes'
-export * from './NaCl'
-export * from './Pgp'
-export * from './ResponseBody'
+import * as AesExports from './Aes'
+import * as NaClExports from './NaCl'
+import * as PgpExports from './Pgp'
+import ResponseBody from './ResponseBody'
+
+const exportProps = {}
+Object.assign(exportProps, AesExports, NaClExports, PgpExports, { ResponseBody, default: undefined })
+
+module.exports = exportProps

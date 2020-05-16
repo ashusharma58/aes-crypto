@@ -3,27 +3,21 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _NaClBox = require("./NaClBox");
-
-Object.keys(_NaClBox).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _NaClBox[key];
-    }
-  });
+Object.defineProperty(exports, "NaClBox", {
+  enumerable: true,
+  get: function get() {
+    return _NaClBox.default;
+  }
+});
+Object.defineProperty(exports, "NaClUtils", {
+  enumerable: true,
+  get: function get() {
+    return _NaClUtils.default;
+  }
 });
 
-var _NaClUtils = require("./NaClUtils");
+var _NaClBox = _interopRequireDefault(require("./NaClBox"));
 
-Object.keys(_NaClUtils).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _NaClUtils[key];
-    }
-  });
-});
+var _NaClUtils = _interopRequireDefault(require("./NaClUtils"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

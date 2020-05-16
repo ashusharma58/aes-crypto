@@ -2,8 +2,14 @@
 
 import crypto from 'crypto'
 import CryptoError from '../CryptoError'
+import AES_CONSTANTS from './AES_CONSTANTS'
+import AesUtils from './AesUtils'
 
-const ALGORITHMS = ['aes-128-cbc', 'aes-256-cbc']
+const {
+  AES_CBC_ALGORITHMS: ALGORITHMS,
+  DEFAULT_AES_OPTIONS: DEFAULT_OPTIONS,
+  KEY_LENGTH_MAP
+} = AES_CONSTANTS
 
 const AesCBC = {
   ALGORITHMS,
@@ -13,75 +19,256 @@ const AesCBC = {
 
 export default AesCBC
 
-const DEFAULT_OPTIONS = {
-  outputFormat: 'hex',
-  uriEncode: false
-}
-
-function encrypt (algorithm, params = {}, options = DEFAULT_OPTIONS) {
-  const { key = '', data = '' } = params
+function encrypt (algorithm, params = {}, _options = {}) {
+  const source = `${algorithm}::encrypt`
+  const { data = '' } = params
+  const options = { ...DEFAULT_OPTIONS, ..._options }
   const {
-    outputFormat = DEFAULT_OPTIONS.outputFormat,
-    uriEncode = DEFAULT_OPTIONS.uriEncode
+    cipherTextFormat,
+    plainTextFormat,
+    deriveKey
   } = options
 
-  if (typeof key !== 'string' || !key) {
-    throw new CryptoError(algorithm, `Provided 'key' must be a non-empty string`)
-  }
-
-  if (typeof data !== 'string' || !data) {
-    throw new CryptoError(algorithm, `Provided 'data' must be a non-empty string`)
-  }
+  validateEncryptOptions(source, params, options)
 
   try {
-    const ivBuffer = crypto.randomBytes(16)
-    const ivString = ivBuffer.toString(outputFormat)
+    const keyObj = getKey(algorithm, params, options)
+    const ivObj = getEncryptIV(params, options)
 
-    const encryptor = crypto.createCipheriv(algorithm, key, ivBuffer)
-    let cipherText = encryptor.update(data, 'utf8', outputFormat)
-    cipherText += encryptor.final(outputFormat)
-    cipherText = [ivString, cipherText].join('.')
+    const { buffer: keyBuffer, saltObj } = keyObj
+    const { string: saltString } = saltObj || {}
+    const { buffer: ivBuffer, string: ivString } = ivObj
 
-    if (uriEncode) {
-      cipherText = encodeURIComponent(cipherText)
+    const encryptor = crypto.createCipheriv(algorithm, keyBuffer, ivBuffer)
+
+    const cipherTextBuffer = Buffer.concat([encryptor.update(data, plainTextFormat), encryptor.final()])
+    const cipherTextString = cipherTextBuffer.toString(cipherTextFormat)
+    const cipherTextObj = {
+      buffer: cipherTextBuffer,
+      string: cipherTextString
     }
-    return cipherText
-  } catch (e) { throw new CryptoError(algorithm, '', e) }
+
+    const payloadFunc = (deriveKey && generateEncryptPayloadWithKDF) || generateEncryptPayloadWithoutKDF
+    const payloadObj = payloadFunc(options, cipherTextObj, ivObj, saltObj)
+    const { string: payloadString } = payloadObj
+
+    const encryptedData = {
+      salt: saltString,
+      iv: ivString,
+      cipherText: cipherTextString,
+      payload: payloadString
+    }
+    return encryptedData
+  } catch (e) { throw new CryptoError(e, source) }
 }
 
-function decrypt (algorithm, params = {}, options = DEFAULT_OPTIONS) {
-  const { key = '', data = '' } = params
+function decrypt (algorithm, params = {}, _options = {}) {
+  const source = `${algorithm}::decrypt`
+  const { iv = '', salt = '', cipherText = '' } = params
+  const options = { ...DEFAULT_OPTIONS, ..._options }
   const {
-    outputFormat = DEFAULT_OPTIONS.outputFormat,
-    uriEncode = DEFAULT_OPTIONS.uriEncode
+    ivFormat,
+    saltFormat,
+    cipherTextFormat,
+    plainTextFormat,
+    deriveKey
   } = options
-  let encryptedData = data
 
-  if (typeof key !== 'string' || !key) {
-    throw new CryptoError(algorithm, `Provided 'key' must be a non-empty string`)
-  }
-
-  if (typeof data !== 'string' || !data) {
-    throw new CryptoError(algorithm, `Provided 'data' must be a non-empty string`)
-  }
+  validateDecryptOptions(source, params, options)
 
   try {
-    if (uriEncode) {
-      encryptedData = decodeURIComponent(data)
-    }
+    const payloadPartsFunc = (deriveKey && getPayloadPartsWithKDF) || getPayloadPartsWithoutKDF
+    const payloadPartsObj = payloadPartsFunc(source, params, options)
 
-    encryptedData = encryptedData.split('.')
+    let { cipherTextBuffer, ivBuffer, saltBuffer } = payloadPartsObj
+    saltBuffer = saltBuffer || Buffer.from(salt, saltFormat)
+    ivBuffer = ivBuffer || Buffer.from(iv, ivFormat)
+    cipherTextBuffer = cipherTextBuffer || Buffer.from(cipherText, cipherTextFormat)
 
-    if (encryptedData.length !== 2) {
-      throw new CryptoError(algorithm, 'Invalid Encrypted Data')
-    }
+    const _params = { ...params, saltBuffer }
+    const keyObj = getKey(algorithm, _params, options)
+    const { buffer: keyBuffer } = keyObj
 
-    const [iv, cipherText] = encryptedData
-    const ivBuffer = Buffer.from(iv, outputFormat)
-    const keyBuffer = Buffer.from(key)
     const decryptor = crypto.createDecipheriv(algorithm, keyBuffer, ivBuffer)
-    let decryptedText = decryptor.update(cipherText, outputFormat, 'utf8')
-    decryptedText += decryptor.final('utf8')
-    return decryptedText
-  } catch (e) { throw new CryptoError(algorithm, '', e) }
+
+    const plainTextBuffer = Buffer.concat([decryptor.update(cipherTextBuffer), decryptor.final()])
+    const plainTextString = plainTextBuffer.toString(plainTextFormat)
+    const decryptedData = { data: plainTextString }
+    return decryptedData
+  } catch (e) { throw new CryptoError(e, source) }
+}
+
+function validateEncryptOptions (source, params, options) {
+  const { key, data, masterKey } = params
+  const { deriveKey } = options
+
+  if (typeof data !== 'string' || !data) {
+    throw new CryptoError(null, source, 'Provided \'data\' must be a non-empty string')
+  }
+
+  if (!deriveKey && (typeof key !== 'string' || !key)) {
+    throw new CryptoError(null, source, 'Provided \'key\' must be a non-empty string for non-derived keys')
+  }
+
+  if (deriveKey && (typeof masterKey !== 'string' || !masterKey)) {
+    throw new CryptoError(null, source, 'Provided \'masterKey\' must be a non-empty string for derived keys')
+  }
+}
+
+function validateDecryptOptions (source, params, options) {
+  const { key, payload, masterKey, cipherText, iv } = params
+  const { deriveKey } = options
+
+  if ((typeof payload !== 'string' || !payload) && (typeof cipherText !== 'string' || !cipherText)) {
+    throw new CryptoError(null, source, 'Provided \'payload\' or \'cipherText\' must be a non-empty string')
+  }
+
+  if (!deriveKey && (typeof key !== 'string' || !key)) {
+    throw new CryptoError(null, source, 'Provided \'key\' must be a non-empty string for non-derived keys')
+  }
+
+  if (deriveKey && (typeof masterKey !== 'string' || !masterKey)) {
+    throw new CryptoError(null, source, 'Provided \'masterKey\' must be a non-empty string for derived keys')
+  }
+
+  if ((typeof cipherText === 'string' && cipherText) && (typeof iv !== 'string' || !iv)) {
+    throw new CryptoError(null, source, 'Provided \'iv\' must be a non-empty string')
+  }
+}
+
+function getEncryptIV (params, options) {
+  const { iv } = params
+  const { ivFormat, ivLength } = options
+
+  const buffer = (iv && Buffer.from(iv, ivFormat)) || crypto.randomBytes(ivLength)
+  const string = iv || buffer.toString(ivFormat)
+
+  return { buffer, string }
+}
+
+function getSalt (params, options) {
+  const { salt, saltBuffer } = params
+  const { saltFormat, saltLength } = options
+
+  const buffer = saltBuffer || (salt && Buffer.from(salt, saltFormat)) || crypto.randomBytes(saltLength)
+  const string = salt || buffer.toString(saltFormat)
+
+  return { buffer, string }
+}
+
+function getKey (algorithm, params, options) {
+  const { key, masterKey } = params
+  const { deriveKey, keyFormat } = options
+
+  const saltObj = (deriveKey && getSalt(params, options)) || undefined
+  const { buffer: saltBuffer } = saltObj || {}
+
+  const keyLength = KEY_LENGTH_MAP[algorithm]
+  const buffer = deriveKey
+    ? AesUtils.deriveKey(masterKey, saltBuffer, keyLength, options)
+    : Buffer.from(key, keyFormat)
+
+  return {
+    buffer,
+    string: ((deriveKey && masterKey) || key),
+    saltObj
+  }
+}
+
+function generateEncryptPayloadWithKDF (options, cipherTextObj, ivObj, saltObj) {
+  const { dataSeparator, cipherTextFormat } = options
+  const { buffer: cipherTextBuffer, string: cipherTextString } = cipherTextObj
+  const { buffer: ivBuffer, string: ivString } = ivObj
+  const { buffer: saltBuffer, string: saltString } = saltObj
+
+  const payloadBuffer = Buffer.concat([saltBuffer, ivBuffer, cipherTextBuffer])
+  const payloadString = dataSeparator
+    ? [saltString, ivString, cipherTextString].join(dataSeparator)
+    : payloadBuffer.toString(cipherTextFormat)
+
+  return {
+    buffer: payloadBuffer,
+    string: payloadString
+  }
+}
+
+function generateEncryptPayloadWithoutKDF (options, cipherTextObj, ivObj) {
+  const { dataSeparator, cipherTextFormat } = options
+  const { buffer: cipherTextBuffer, string: cipherTextString } = cipherTextObj
+  const { buffer: ivBuffer, string: ivString } = ivObj
+
+  const payloadBuffer = Buffer.concat([ivBuffer, cipherTextBuffer])
+  const payloadString = dataSeparator
+    ? [ivString, cipherTextString].join(dataSeparator)
+    : payloadBuffer.toString(cipherTextFormat)
+
+  return {
+    buffer: payloadBuffer,
+    string: payloadString
+  }
+}
+
+function getPayloadPartsWithKDF (source, params, options) {
+  const { payload } = params
+  const { dataSeparator, saltFormat, ivFormat, cipherTextFormat, saltLength, ivLength } = options
+  let saltBuffer
+  let ivBuffer
+  let cipherTextBuffer
+
+  if (dataSeparator) {
+    const [saltString, ivString, cipherTextString] = payload.split(dataSeparator)
+
+    if (!saltString || !ivString || !cipherTextString) {
+      throw new CryptoError(null, source, 'Invalid \'payload\' for decrpytion')
+    }
+
+    saltBuffer = Buffer.from(saltString, saltFormat)
+    ivBuffer = Buffer.from(ivString, ivFormat)
+    cipherTextBuffer = Buffer.from(cipherTextString, cipherTextFormat)
+  } else {
+    const payloadBuffer = Buffer.from(payload, cipherTextFormat)
+
+    const saltBufferLimit = saltLength
+    const ivBufferLimit = saltLength + ivLength
+
+    saltBuffer = payloadBuffer.slice(0, saltBufferLimit)
+    ivBuffer = payloadBuffer.slice(saltBufferLimit, ivBufferLimit)
+    cipherTextBuffer = payloadBuffer.slice(ivBufferLimit)
+  }
+
+  return {
+    saltBuffer,
+    ivBuffer,
+    cipherTextBuffer
+  }
+}
+
+function getPayloadPartsWithoutKDF (source, params, options) {
+  const { payload } = params
+  const { dataSeparator, ivFormat, cipherTextFormat, ivLength } = options
+  let ivBuffer
+  let cipherTextBuffer
+
+  if (dataSeparator) {
+    const [ivString, cipherTextString] = payload.split(dataSeparator)
+
+    if (!ivString || !cipherTextString) {
+      throw new CryptoError(null, source, 'Invalid \'payload\' for decrpytion')
+    }
+
+    ivBuffer = Buffer.from(ivString, ivFormat)
+    cipherTextBuffer = Buffer.from(cipherTextString, cipherTextFormat)
+  } else {
+    const payloadBuffer = Buffer.from(payload, cipherTextFormat)
+
+    const ivBufferLimit = ivLength
+
+    ivBuffer = payloadBuffer.slice(0, ivBufferLimit)
+    cipherTextBuffer = payloadBuffer.slice(ivBufferLimit)
+  }
+
+  return {
+    ivBuffer,
+    cipherTextBuffer
+  }
 }

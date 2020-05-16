@@ -6,9 +6,9 @@ import AesGCM from './AesGCM'
 const { ALGORITHMS: CBC_ALGORITHM } = AesCBC
 const { ALGORITHMS: GCM_ALGORITHM } = AesGCM
 
-const ALGORITHM = {}
+const ALGORITHMS = {}
 
-CBC_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = AesCBC)
-GCM_ALGORITHM.forEach(algorithm => ALGORITHM[algorithm] = AesGCM)
+CBC_ALGORITHM.forEach(algorithm => { ALGORITHMS[algorithm] = AesCBC })
+GCM_ALGORITHM.forEach(algorithm => { ALGORITHMS[algorithm] = AesGCM })
 
-export { ALGORITHM }
+export { ALGORITHMS }

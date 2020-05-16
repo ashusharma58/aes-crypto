@@ -15,7 +15,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var ENTITY = 'PGP-Utils';
+var SOURCE = 'PGP::Utils';
 var DEFAULT_PASSPHRASE = 'Batman';
 var PgpUtils = {
   generateKeys
@@ -36,7 +36,7 @@ function _generateKeys() {
     } = params;
 
     if (!(userIds instanceof Array) || !userIds.length) {
-      throw new _CryptoError.default(ENTITY, "Provided 'userIds' must be a non-empty Array");
+      throw new _CryptoError.default(null, SOURCE, 'Provided \'userIds\' must be a non-empty Array to Generate Keys');
     }
 
     var options = {
@@ -49,7 +49,7 @@ function _generateKeys() {
       var keys = yield _openpgp.default.generateKey(options);
       return keys;
     } catch (e) {
-      throw new _CryptoError.default(ENTITY, 'Error Generating Keys', e);
+      throw new _CryptoError.default(e, SOURCE, 'Error Generating Keys');
     }
   });
   return _generateKeys.apply(this, arguments);

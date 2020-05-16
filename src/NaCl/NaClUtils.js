@@ -4,13 +4,15 @@ import { box, randomBytes } from 'tweetnacl'
 import { encodeBase64, decodeBase64 } from 'tweetnacl-util'
 import CryptoError from '../CryptoError'
 
-const ENTITY = 'NaCl-Utils'
+const SOURCE = 'NaCl::Utils'
 
-export const NaClUtils = {
+const NaClUtils = {
   generateKeyPair,
   generateKey,
   generateNonce
 }
+
+export default NaClUtils
 
 function generateKeyPair () {
   try {
@@ -22,7 +24,7 @@ function generateKeyPair () {
       publicKey: publicKeyString,
       secretKey: secretKeyString
     }
-  } catch (e) { throw new CryptoError(ENTITY, 'Error Generating Key Pair', e) }
+  } catch (e) { throw new CryptoError(e, SOURCE, 'Error Generating Key Pair') }
 }
 
 function generateKey (publicKeyString, secretKeyString) {
@@ -30,11 +32,11 @@ function generateKey (publicKeyString, secretKeyString) {
     const publicKey = decodeBase64(publicKeyString)
     const secretKey = decodeBase64(secretKeyString)
     return box.before(publicKey, secretKey)
-  } catch (e) { throw new CryptoError(ENTITY, 'Error Generating Key', e) }
+  } catch (e) { throw new CryptoError(e, SOURCE, 'Error Generating Key') }
 }
 
 function generateNonce () {
   try {
     return randomBytes(box.nonceLength)
-  } catch (e) { throw new CryptoError(ENTITY, 'Error Generating Nonce', e) }
+  } catch (e) { throw new CryptoError(e, SOURCE, 'Error Generating Nonce') }
 }

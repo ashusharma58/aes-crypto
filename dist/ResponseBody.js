@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ResponseBody = void 0;
+exports.default = void 0;
 
 var _http = _interopRequireDefault(require("http"));
 
@@ -18,4 +18,4 @@ class ResponseBody {
 
 }
 
-exports.ResponseBody = ResponseBody;
+exports.default = ResponseBody;
