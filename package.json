@@ -1,6 +1,6 @@
 {
   "name": "@m92/crypto",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "description": "Cryptographic Module",
   "main": "dist/index.js",
   "directories": {
