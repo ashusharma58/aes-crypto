@@ -8,6 +8,8 @@ var PgpExports = _interopRequireWildcard(require("./Pgp"));
 
 var _ResponseBody = _interopRequireDefault(require("./ResponseBody"));
 
+var _cryptoHelper = _interopRequireDefault(require("./cryptoHelper"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -17,6 +19,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 var exportProps = {};
 Object.assign(exportProps, AesExports, NaClExports, PgpExports, {
   ResponseBody: _ResponseBody.default,
+  cryptoHelper: _cryptoHelper.default,
   default: undefined
 });
 module.exports = exportProps;
