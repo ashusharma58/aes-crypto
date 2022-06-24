@@ -1,4 +1,9 @@
-'use strict';
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
 var AesExports = _interopRequireWildcard(require("./Aes"));
 
@@ -22,4 +27,6 @@ Object.assign(exportProps, AesExports, NaClExports, PgpExports, {
   cryptoHelper: _cryptoHelper.default,
   default: undefined
 });
-module.exports = exportProps;
+var _default = AesExports;
+exports.default = _default;
+module.exports = AesExports;
