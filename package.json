@@ -1,5 +1,5 @@
 {
-  "name": "aes-crypto",
+  "name": "aes-crypto-test",
   "version": "0.0.1",
   "description": "Cryptographic Module",
   "main": "dist/index.js",
