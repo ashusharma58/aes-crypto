@@ -5,7 +5,6 @@ import * as NaClExports from "./NaCl";
 import * as PgpExports from "./Pgp";
 import ResponseBody from "./ResponseBody";
 import cryptoHelper from "./cryptoHelper";
-import AES from "./Aes";
 
 const exportProps = {};
 Object.assign(exportProps, AES, NaClExports, PgpExports, {
