@@ -1,17 +1,18 @@
 "use strict";
 
-import * as AesExports from "./Aes";
+import AES from "./Aes";
 import * as NaClExports from "./NaCl";
 import * as PgpExports from "./Pgp";
 import ResponseBody from "./ResponseBody";
 import cryptoHelper from "./cryptoHelper";
+import AES from "./Aes";
 
 const exportProps = {};
-Object.assign(exportProps, AesExports, NaClExports, PgpExports, {
+Object.assign(exportProps, AES, NaClExports, PgpExports, {
   ResponseBody,
   cryptoHelper,
   default: undefined,
 });
 
-export default AesExports;
-module.exports = AesExports;
+export default AES;
+module.exports = AES;

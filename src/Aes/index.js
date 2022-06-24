@@ -1,11 +1,12 @@
-'use strict'
+"use strict";
 
-import Aes from './Aes'
-import AesUtils from './AesUtils'
-import AES_CONSTANTS from './AES_CONSTANTS'
+import Aes from "./Aes";
+import AesUtils from "./AesUtils";
+import AES_CONSTANTS from "./AES_CONSTANTS";
 
-export {
+const AES = {
   Aes,
   AesUtils,
-  AES_CONSTANTS
-}
+  AES_CONSTANTS,
+};
+export default AES;
